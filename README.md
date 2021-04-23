@@ -1,6 +1,22 @@
 # EE_Chrome_Extension
 Here is Chrome Developers [Docs](https://developer.chrome.com/docs/extensions/) and [Getting Started](https://developer.chrome.com/docs/extensions/mv3/getstarted/) article.
 
+# Quick Start
+
+Go to `chrome://extensions/` enable developer mode in top left corner 
+
+![image](https://user-images.githubusercontent.com/39594956/115865970-5325a800-a439-11eb-99e8-cf1bb4e03679.png)
+
+Press `Load unpacked` (First option)
+
+![image](https://user-images.githubusercontent.com/39594956/115866045-6e90b300-a439-11eb-9f05-0bcaf9e8e0bc.png)
+
+Choose folder with extension. Enable and you are done!
+
+# Kinda Hot Reload
+
+To reload extension after changes tap small reload button on extension card (page `chrome://extensions/` )
+
 # Copied from docs.
 
 Extensions are made of different, but cohesive, components. Components can include [background scripts](/docs/extensions/mv3/background_pages/), [content scripts](/docs/extensions/mv3/content_scripts/), an [options page](/docs/extensions/mv3/options/), [UI elements](/docs/extensions/mv3/user_interface/) and various logic files. Extension components are created with web development technologies: HTML, CSS, and JavaScript. An extension's components will depend on its functionality and may not require every option.
@@ -32,6 +48,7 @@ Ta-da! The extension has been successfully installed. Because no icons were incl
 ## Add functionality [#](#background)
 
 The extension is now installed, but it doesn't currently do anything because we haven't told it what to do or when to do it. Let's fix that by adding some code to store a background color value.
+
 
 To do this, we will need to create a [background script](/docs/extensions/mv3/background_pages/) and add it to the extension's manifest. Start by creating a file named `background.js` inside the extension's directory.
 
