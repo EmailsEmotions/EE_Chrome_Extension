@@ -1,6 +1,7 @@
 
 let auth;
 let content;
+// TMP TO BE REMOVED
 let tmp = 1;
 
 class Section {
@@ -125,12 +126,14 @@ class AuthSection extends Section {
             // Errors
             this.setError('login', 'password', true, 'Custom error message');
 
-            if (tmp === 2) {
+            // TMP TO BE REMOVED
+            if (tmp >= 2) {
                 auth.hide();
                 content.show();
+                chrome.storage.local.set({logged: true});
             }
             tmp++;
-        }, 20);
+        }, 2000);
     }
 
     register () {
@@ -185,6 +188,10 @@ class ContentSection extends Section {
 
         document.getElementById('content-button-emotions').addEventListener('click', () => {
             this.checkEmotions();
+        });
+
+        document.getElementById('logout-image').addEventListener('click', () => {
+            this.logout();
         });
     }
 
@@ -261,13 +268,30 @@ class ContentSection extends Section {
     showReviewButton() {
         document.getElementById('content-results-review').setAttribute('name', 'shown');
     }
-}
 
+    logout() {
+        chrome.storage.local.remove(['logged']);
+        content.hide();
+        auth.show();
+    }
+}
 
 window.onload = () => {
     auth = new AuthSection();
-    auth.show();
-    // auth.hide();
     content = new ContentSection();
-    // content.show();
+
+    chrome.storage.local.get(['logged'], (result) => {
+        if (result.logged) {
+            content.show();
+        } else {
+            auth.show();
+        }
+    });
+
+    chrome.storage.local.get(['savedWord'], (result) => {
+        if (result.savedWord) {
+            document.getElementById('content-textarea').value = result.savedWord;
+            chrome.storage.local.remove(['savedWord']);
+        }
+    });
 }
