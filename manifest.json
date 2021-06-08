@@ -8,7 +8,7 @@
   },
   "permissions": ["storage", "activeTab", "scripting"],
   "action": {
-    "default_popup": "popup.html",
+    "default_popup": "html/popup.html",
     "default_icon": {
         "16": "/images/Logo16.png",
         "32": "/images/Logo32.png",
@@ -22,5 +22,5 @@
     "48": "/images/Logo48.png",
     "128": "/images/Logo128.png"
   },
-  "options_page": "options.html"
+  "options_page": "html/options.html"
 }

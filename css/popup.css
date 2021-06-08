@@ -1,0 +1,1 @@
+.auth{width:300px;background:#fff}.auth-header{position:relative;width:100%;display:flex}.auth-header-label{padding:12px 0;margin:2px;text-align:center;flex:1 1}.auth-header-label:not([name="active"]):hover{cursor:pointer;background:#eee}#auth-header-line{position:absolute;bottom:0;left:10px;width:calc(50% - 20px);height:2px;background-color:#0099ff}
