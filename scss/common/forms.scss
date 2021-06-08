@@ -27,6 +27,19 @@
         }
     }
 
+    > textarea {
+        min-width: calc(100% - 2px - 20px);
+        max-width: calc(100% - 2px - 20px);
+        height: 80px;
+        border:solid 1px #ccc;
+        padding: 10px;
+        border-radius: 5px;
+
+        &[name="error"] {
+            border-color: #ff0000;
+        }
+    }
+
     > span {
         width: 100%;
         color: #ff0000;

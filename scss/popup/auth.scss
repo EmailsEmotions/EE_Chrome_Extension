@@ -1,6 +1,5 @@
 #auth {
     background: #fff;
-    display: none;
 
     &[name="shown"] {
         display: block;
@@ -40,8 +39,31 @@
     transition: left 0.2s;
 }
 
+.auth-logo {
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+
+    > div {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        > h1 {
+            flex: 1 1;
+        }
+
+        > img {
+            width: 32px;
+            margin-right: 5px;
+        }
+    }
+}
+
 .auth-tabs {
-    padding: 30px 20px;
+    padding: 20px 20px 30px 20px;
 
     > section {
         display: none;
@@ -69,13 +91,13 @@
     }
 }
 
-#auth-login-buttons {
+.auth-buttons {
     &[name="hidden"] {
         display: none;
     }
 }
 
-#auth-login-loading {
+.auth-loading {
     margin-top: 20px;
     width: 100%;
     display: none;

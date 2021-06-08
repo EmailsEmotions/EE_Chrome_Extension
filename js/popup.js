@@ -1,4 +1,8 @@
 
+let auth;
+let content;
+let tmp = 1;
+
 class Section {
     constructor(sectionName) {
         this.sectionName = sectionName;
@@ -47,6 +51,22 @@ class AuthSection extends Section {
                 this.setError('login', input, false);
             });
         }
+
+        // Register
+        document.getElementById('auth-button-register').addEventListener('click', () => {
+            this.register();
+        });
+
+        document.getElementById('auth-button-have-acccount').addEventListener('click', () => {
+            const loginTab = 0;
+            this.chooseTab(loginTab);
+        });
+
+        for (const input of ['email', 'password', 'password-repeat']) {
+            document.getElementById(`auth-register-${input}-input`).addEventListener('click', () => {
+                this.setError('register', input, false);
+            });
+        }
     }
 
     chooseTab(which) {
@@ -81,19 +101,63 @@ class AuthSection extends Section {
     }
 
     login() {
+        // Set readonly and clear errors
         for (const input of ['email', 'password']) {
+            this.setError('login', input, false);
             document.getElementById(`auth-login-${input}-input`).readOnly = true;
         }
+
+        // Hide buttons, show loading
         document.getElementById('auth-login-buttons').setAttribute('name', 'hidden');
         document.getElementById('auth-login-loading').setAttribute('name', 'shown');
 
+        // Mock result
         setTimeout(() => {
+            // Disable readonly
             for (const input of ['email', 'password']) {
                 document.getElementById(`auth-login-${input}-input`).readOnly = true;
             }
+
+            // Show buttons, hide loading
             document.getElementById('auth-login-buttons').removeAttribute('name');
             document.getElementById('auth-login-loading').removeAttribute('name');
+
+            // Errors
             this.setError('login', 'password', true, 'Custom error message');
+
+            if (tmp === 2) {
+                auth.hide();
+                content.show();
+            }
+            tmp++;
+        }, 20);
+    }
+
+    register () {
+        // Set readonly and clear errors
+        for (const input of ['email', 'password', 'password-repeat']) {
+            this.setError('register', input, false);
+            document.getElementById(`auth-register-${input}-input`).readOnly = true;
+        }
+
+        // Hide buttons, show loading
+        document.getElementById('auth-register-buttons').setAttribute('name', 'hidden');
+        document.getElementById('auth-register-loading').setAttribute('name', 'shown');
+
+        // Mock result
+        setTimeout(() => {
+            // Disable readonly
+            for (const input of ['email', 'password']) {
+                document.getElementById(`auth-register-${input}-input`).readOnly = true;
+            }
+
+            // Show buttons, hide loading
+            document.getElementById('auth-register-buttons').removeAttribute('name');
+            document.getElementById('auth-register-loading').removeAttribute('name');
+
+            // Errors
+            this.setError('register', 'password', true, 'Custom error message');
+            this.setError('register', 'password-repeat', true, 'Custom error message v2');
         }, 2000);
     }
 
@@ -107,48 +171,103 @@ class AuthSection extends Section {
     }
 }
 
-window.onload = () => {
-    const auth = new AuthSection();
-    auth.show();
+class ContentSection extends Section {
+    constructor() {
+        super('content');
+
+        this.appendListeners();
+    }
+
+    appendListeners() {
+        document.getElementById('content-button-formality').addEventListener('click', () => {
+            this.checkFormality();
+        });
+
+        document.getElementById('content-button-emotions').addEventListener('click', () => {
+            this.checkEmotions();
+        });
+    }
+
+    checkFormality() {
+        this.startFormalityLoading();
+        document.getElementById('content-results-formality').removeAttribute('name');
+
+        setTimeout(() => {
+            this.stopFormalityLoading();
+            this.showFormalityResults({formal: 20, informal: 80});
+            this.showReviewButton();
+        }, 1000);
+    }
+
+    checkEmotions() {
+        this.startEmotionsLoading();
+        document.getElementById('content-results-emotions').removeAttribute('name');
+
+        setTimeout(() => {
+            this.stopEmotionsLoading();
+            this.showEmotionsResults({a: 10, b: 20, c: 30, d: 80, e: 50});
+            this.showReviewButton();
+        }, 1000);
+    }
+
+    startFormalityLoading() {
+        document.getElementById('content-textarea').readOnly = true;
+        document.getElementById('content-button-formality').setAttribute('name', 'hidden');
+        document.getElementById('content-formality-loading').setAttribute('name', 'shown');
+    }
+
+    stopFormalityLoading() {
+        document.getElementById('content-textarea').readOnly = false;
+        document.getElementById('content-button-formality').removeAttribute('name');
+        document.getElementById('content-formality-loading').removeAttribute('name');
+    }
+
+    startEmotionsLoading() {
+        document.getElementById('content-textarea').readOnly = true;
+        document.getElementById('content-button-emotions').setAttribute('name', 'hidden');
+        document.getElementById('content-emotions-loading').setAttribute('name', 'shown');
+    }
+
+    stopEmotionsLoading() {
+        document.getElementById('content-textarea').readOnly = false;
+        document.getElementById('content-button-emotions').removeAttribute('name');
+        document.getElementById('content-emotions-loading').removeAttribute('name');
+    }
+
+    showFormalityResults(results) {
+        document.getElementById('content-results-formality').setAttribute('name', 'shown');
+        
+        document.getElementById('content-result-formality-1').innerHTML = `${results.formal}%`;
+        document.getElementById('content-result-formality-col-1').style.background = `rgba(255, 153, 0, ${results.formal / 100})`;
+        document.getElementById('content-result-formality-2').innerHTML = `${results.informal}%`;
+        document.getElementById('content-result-formality-col-2').style.background = `rgba(255, 153, 0, ${results.informal / 100})`;
+    }
+
+    showEmotionsResults(results) {
+        document.getElementById('content-results-emotions').setAttribute('name', 'shown');
+
+        document.getElementById('content-result-emotion-1').innerHTML = `${results.a}%`;
+        document.getElementById('content-result-emotion-col-1').style.background = `rgba(255, 153, 0, ${results.a / 100})`;
+        document.getElementById('content-result-emotion-2').innerHTML = `${results.b}%`;
+        document.getElementById('content-result-emotion-col-2').style.background = `rgba(255, 153, 0, ${results.b / 100})`;
+        document.getElementById('content-result-emotion-3').innerHTML = `${results.c}%`;
+        document.getElementById('content-result-emotion-col-3').style.background = `rgba(255, 153, 0, ${results.c / 100})`;
+        document.getElementById('content-result-emotion-4').innerHTML = `${results.d}%`;
+        document.getElementById('content-result-emotion-col-4').style.background = `rgba(255, 153, 0, ${results.d / 100})`;
+        document.getElementById('content-result-emotion-5').innerHTML = `${results.e}%`;
+        document.getElementById('content-result-emotion-col-5').style.background = `rgba(255, 153, 0, ${results.e / 100})`;
+    }
+
+    showReviewButton() {
+        document.getElementById('content-results-review').setAttribute('name', 'shown');
+    }
 }
 
 
-// let checkFormality = document.getElementById('check-formality');
-// let checkEmotions = document.getElementById('check-emotions');
-// let text = document.getElementById('text-to-check');
-// let info = document.getElementById('info');
-
-// setPageBackgroundColor();
-
-// checkFormality.addEventListener('click', function () {
-//     var myHeaders = new Headers();
-//     myHeaders.append('Content-Type', 'application/json');
-    
-//     var raw = JSON.stringify({'text': text.value});
-    
-//     var requestOptions = {
-//         method: 'POST',
-//         headers: myHeaders,
-//         body: raw,
-//         redirect: 'follow'
-//     };
-    
-//     fetch('http://localhost:8998/countnos', requestOptions)
-//         .then(response => response.text())
-//         .then(result => info.innerHTML = 'Result: ' + result)
-//         .catch(error => console.log('error', error));
-// });
-
-// checkEmotions.addEventListener('click', function () {
-//     notImplementedYetInfo()
-// });
-
-// function notImplementedYetInfo() {
-//     info.innerHTML = 'Not implemented yet! <br/>Entered text: ' + text.value
-// }
-
-// function setPageBackgroundColor() {
-//     chrome.storage.sync.get('color', ({ color }) => {
-//         document.body.style.backgroundColor = color;
-//     });
-// }
+window.onload = () => {
+    auth = new AuthSection();
+    auth.show();
+    // auth.hide();
+    content = new ContentSection();
+    // content.show();
+}
