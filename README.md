@@ -11,7 +11,16 @@ Press `Load unpacked` (First option)
 
 ![image](https://user-images.githubusercontent.com/39594956/115866045-6e90b300-a439-11eb-9f05-0bcaf9e8e0bc.png)
 
-Choose folder with extension. Enable and you are done!
+Choose folder with extension. Enable and you are almost done!
+
+In main directory run
+`npm install`
+
+To build css styles run
+`gulp scss`
+
+for continuous developing (watch-mode) run
+`gulp scss:watch`
 
 # Kinda Hot Reload
 
