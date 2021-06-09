@@ -13,14 +13,19 @@ Press `Load unpacked` (First option)
 
 Choose folder with extension. Enable and you are almost done!
 
-In main directory run
+In main directory run:
+
 `npm install`
 
-To build css styles run
-`gulp scss`
 
-for continuous developing (watch-mode) run
-`gulp scss:watch`
+To build css styles run:
+
+`npm run scss`
+
+
+for continuous developing (watch-mode) run:
+
+`npm run scss-watch`
 
 # Kinda Hot Reload
 
