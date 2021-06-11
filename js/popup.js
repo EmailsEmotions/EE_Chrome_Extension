@@ -1,7 +1,5 @@
 let auth;
 let content;
-// TMP TO BE REMOVED
-let tmp = 1;
 
 function validateEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
@@ -136,10 +134,10 @@ class AuthSection extends Section {
         }
 
         // Construct body
-        const body = {
+        const body = JSON.stringify({
             username,
             password,
-        };
+        });
 
         // Set readonly
         for (const input of this.loginFields) {
@@ -168,8 +166,11 @@ class AuthSection extends Section {
                     auth.hide();
                     content.show();
                     chrome.storage.local.set({logged: true});
+                    this.clearRegisterInputs();
+                    this.clearLoginInputs();
                 } else if (xhr.status === 500) {
-                    this.setGlobalError('login', true);
+                    // TODO
+                    this.setGlobalError('login', true, 'Niepoprawne dane');
                 } else {
                     this.setGlobalError('login', true, 'Niepoprawne dane');
                 }
@@ -177,14 +178,8 @@ class AuthSection extends Section {
         });
 
         xhr.open('POST', 'http://localhost:8080/api/user/login');
+        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(body);
-
-        if (tmp === 2) {
-            auth.hide();
-            content.show();
-            chrome.storage.local.set({logged: true});
-        }
-        tmp++;
     }
 
     setGlobalError(section, error, message = 'Unexpected error occured') {
@@ -240,11 +235,11 @@ class AuthSection extends Section {
         }
 
         // Construct body
-        const body = {
+        const body = JSON.stringify({
             username,
             email,
             password,
-        };
+        });
 
         // Set readonly
         for (const input of this.registerFields) {
@@ -273,7 +268,10 @@ class AuthSection extends Section {
                     auth.hide();
                     content.show();
                     chrome.storage.local.set({logged: true});
+                    this.clearRegisterInputs();
+                    this.clearLoginInputs();
                 } else if (xhr.status === 500) {
+                    // TODO
                     this.setGlobalError('register', true);
                 } else {
                     this.setGlobalError('register', true, 'Niepoprawne dane');
@@ -282,7 +280,20 @@ class AuthSection extends Section {
         });
 
         xhr.open('POST', 'http://localhost:8080/api/user/addUser');
+        xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(body);
+    }
+
+    clearLoginInputs() {
+        document.getElementById('auth-login-username-input').value = '';
+        document.getElementById('auth-login-password-input').value = '';
+    }
+
+    clearRegisterInputs() {
+        document.getElementById('auth-register-username-input').value = '';
+        document.getElementById('auth-register-email-input').value = '';
+        document.getElementById('auth-register-password-input').value = '';
+        document.getElementById('auth-register-password-repeat-input').value = '';
     }
 
     setError(section, name, isError, message = '') {
@@ -323,6 +334,7 @@ class ContentSection extends Section {
         this.setError('formality', false);
         
         const text = document.getElementById('content-textarea').value.trim();
+        // TODO
         const userId = 1;
 
         if (text.length === 0) {
@@ -338,12 +350,11 @@ class ContentSection extends Section {
             document.getElementById('content-results-emotions').removeAttribute('name');
         }
         
-
         // Body
-        const body = {
+        const body = JSON.stringify({
             text,
             userId,
-        };
+        });
 
         this.setLoading('formality', true);
         document.getElementById('content-results-formality').removeAttribute('name');
@@ -356,7 +367,13 @@ class ContentSection extends Section {
                 this.setLoading('formality', false);
 
                 if (xhr.status == 200 || xhr.status == 201) {
-                    this.showFormalityResults({formal: 20, informal: 80});
+                    try {
+                        const results = JSON.parse(xhr.responseText);
+                        this.showFormalityResults(results);
+                    } catch(e) {
+                        this.setError('emotions', true, 'Unable to interpret server response');
+                    }
+                   
                 } else if (xhr.status === 500) {
                     this.setError('formality', true);
                 } else {
@@ -365,8 +382,8 @@ class ContentSection extends Section {
             }
         });
 
-        xhr.open("POST", "http://localhost:8080/api/formality/recognize");
-        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.open('POST', 'http://localhost:8080/api/formality/recognize');
+        xhr.setRequestHeader('Content-Type', 'application/json');
 
         xhr.send(body);
     }
@@ -376,6 +393,7 @@ class ContentSection extends Section {
         this.setError('emotions', false);
         
         const text = document.getElementById('content-textarea').value;
+        // TODO
         const userId = 1;
 
         if (text.length === 0) {
@@ -392,10 +410,10 @@ class ContentSection extends Section {
         }
 
         // Body
-        const body = {
+        const body = JSON.stringify({
             text,
             userId,
-        };
+        });
 
         this.setLoading('emotions', true);
         document.getElementById('content-results-emotions').removeAttribute('name');
@@ -408,7 +426,12 @@ class ContentSection extends Section {
                 this.setLoading('emotions', false);
                 
                 if (xhr.status == 200 || xhr.status == 201) {
-                    this.showEmotionsResults({happy: 10, sad: 20, fear: 30, angry: 80, surprise: 50});
+                    try {
+                        const results = JSON.parse(xhr.responseText);
+                        this.showEmotionsResults(results);
+                    } catch(e) {
+                        this.setError('emotions', true, 'Unable to interpret server response');
+                    }
                 } else if (xhr.status === 500) {
                     this.setError('emotions', true);
                 } else {
@@ -417,8 +440,8 @@ class ContentSection extends Section {
             }
         });
 
-        xhr.open("POST", "http://localhost:8080/api/emotions/recognize");
-        xhr.setRequestHeader("Content-Type", "application/json");
+        xhr.open('POST', 'http://localhost:8080/api/emotions/recognize');
+        xhr.setRequestHeader('Content-Type', 'application/json');
 
         xhr.send(body);
     }
@@ -458,25 +481,25 @@ class ContentSection extends Section {
     showFormalityResults(results) {
         document.getElementById('content-results-formality').setAttribute('name', 'shown');
         
-        document.getElementById('content-result-formality-1').innerHTML = `${results.formal}%`;
+        document.getElementById('content-result-formality-1').innerHTML = `${results.formality * 100}%`;
         document.getElementById('content-result-formality-col-1').style.background = `rgba(255, 153, 0, ${results.formal / 100})`;
-        document.getElementById('content-result-formality-2').innerHTML = `${results.informal}%`;
+        document.getElementById('content-result-formality-2').innerHTML = `${results.informality * 100}%`;
         document.getElementById('content-result-formality-col-2').style.background = `rgba(255, 153, 0, ${results.informal / 100})`;
     }
 
     showEmotionsResults(results) {
         document.getElementById('content-results-emotions').setAttribute('name', 'shown');
 
-        document.getElementById('content-result-emotion-1').innerHTML = `${results.happy}%`;
-        document.getElementById('content-result-emotion-col-1').style.background = `rgba(255, 153, 0, ${results.happy / 100})`;
-        document.getElementById('content-result-emotion-2').innerHTML = `${results.sad}%`;
-        document.getElementById('content-result-emotion-col-2').style.background = `rgba(255, 153, 0, ${results.sad / 100})`;
-        document.getElementById('content-result-emotion-3').innerHTML = `${results.fear}%`;
-        document.getElementById('content-result-emotion-col-3').style.background = `rgba(255, 153, 0, ${results.fear / 100})`;
-        document.getElementById('content-result-emotion-4').innerHTML = `${results.angry}%`;
-        document.getElementById('content-result-emotion-col-4').style.background = `rgba(255, 153, 0, ${results.angry / 100})`;
-        document.getElementById('content-result-emotion-5').innerHTML = `${results.surprise}%`;
-        document.getElementById('content-result-emotion-col-5').style.background = `rgba(255, 153, 0, ${results.surprise / 100})`;
+        document.getElementById('content-result-emotion-1').innerHTML = `${results.happy * 100}%`;
+        document.getElementById('content-result-emotion-col-1').style.background = `rgba(255, 153, 0, ${results.happy})`;
+        document.getElementById('content-result-emotion-2').innerHTML = `${results.sad * 100}%`;
+        document.getElementById('content-result-emotion-col-2').style.background = `rgba(255, 153, 0, ${results.sad})`;
+        document.getElementById('content-result-emotion-3').innerHTML = `${results.fear * 100}%`;
+        document.getElementById('content-result-emotion-col-3').style.background = `rgba(255, 153, 0, ${results.fear})`;
+        document.getElementById('content-result-emotion-4').innerHTML = `${results.angry * 100}%`;
+        document.getElementById('content-result-emotion-col-4').style.background = `rgba(255, 153, 0, ${results.angry})`;
+        document.getElementById('content-result-emotion-5').innerHTML = `${results.surprise * 100}%`;
+        document.getElementById('content-result-emotion-col-5').style.background = `rgba(255, 153, 0, ${results.surprise})`;
     }
 
     logout() {
