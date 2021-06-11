@@ -29,9 +29,9 @@
             <section id="auth-login">
                 <div class="auth-form">
                     <div class="form-field">
-                        <label>E-mail</label>
-                        <input id="auth-login-email-input" type="email" placeholder="E-mail" />
-                        <span id="auth-login-email-error"></span>
+                        <label>Username</label>
+                        <input id="auth-login-username-input" type="text" placeholder="Username" />
+                        <span id="auth-login-username-error"></span>
                     </div>
                     <div class="form-field">
                         <label>Password</label>
@@ -47,16 +47,27 @@
                     <div class="auth-loading" id="auth-login-loading">
                         <div class="loading"></div>
                     </div>
+
+                    <div class="auth-error" id="auth-login-error">
+                        <p>Unexpected error occured</p>
+                    </div>
                 </div>
             </section>
     
             <section id="auth-register">
                 <div class="auth-form">
                     <div class="form-field">
+                        <label>Username</label>
+                        <input id="auth-register-username-input" type="text" placeholder="Username" />
+                        <span id="auth-register-username-error"></span>
+                    </div>
+
+                    <div class="form-field">
                         <label>E-mail</label>
                         <input id="auth-register-email-input" type="email" placeholder="E-mail" />
                         <span id="auth-register-email-error"></span>
                     </div>
+
                     <div class="form-field">
                         <label>Password</label>
                         <input id="auth-register-password-input" type="password" placeholder="Password" />
@@ -77,6 +88,10 @@
                     <div class="auth-loading" id="auth-register-loading">
                         <div class="loading"></div>
                     </div>
+
+                    <div class="auth-error" id="auth-register-error">
+                        <p>Unexpected error occured</p>
+                    </div>
                 </div>
             </section>
         </main>
@@ -96,6 +111,8 @@
             <div class="form-field">
                 <label>Text to be checked</label>
                 <textarea id="content-textarea" placeholder="Enter your text here..."></textarea>
+
+                <div class="content-results-error" id="content-text-error"></div>
             </div>
 
             <div class="content-buttons">
@@ -138,7 +155,14 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="content-results-review" id="content-results-review-emotions">
+                    <button class="btn btn-primary">Review results</button>
+                </div>
             </div>
+
+            <div class="content-results-error" id="content-formality-error"></div>
+
             <div class="content-results-container" id="content-results-emotions">
                 <h2>Emotions</h2>
                 <div class="content-results-section">
@@ -185,11 +209,14 @@
                         </div>
                     </div>
                 </div>
+                
+                <div class="content-results-review" id="content-results-review-emotions">
+                    <button class="btn btn-primary">Review results</button>
+                </div>
             </div>
 
-            <div id="content-results-review">
-                <button class="btn btn-primary">Review results</button>
-            </div>
+            <div class="content-results-error" id="content-emotions-error"></div>
+
         </section>
     </section>
 

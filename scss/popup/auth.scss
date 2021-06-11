@@ -78,7 +78,7 @@
     .btn-primary {
         width: 100%;
         font-size: 0.8rem;
-        margin-top: 30px;
+        margin-top: 10px;
     }
 
     .btn-secondary {
@@ -106,5 +106,18 @@
 
     &[name="shown"] {
         display: flex;
+    }
+}
+
+.auth-error {
+    width: 100%;
+    margin-top:20px;
+    text-align: center;
+    color: #ff0000;
+    font-size: 0.8rem;
+    display: none;
+
+    &[name="shown"] {
+        display: block;
     }
 }

@@ -135,12 +135,9 @@
     }
 }
 
-#content-results-review {
-    display: none;
-
-    &[name="shown"] {
-        display: block;
-    }
+.content-results-review {
+    text-align: center;
+    margin-top: 10px;
 }
 
 #content-results-formality {
@@ -172,7 +169,7 @@
         }
     }
 
-    .content-results-section:last-of-type {
+    .content-results-section:nth-of-type(2) {
         .content-results-col {
             &:first-of-type {
                 border-bottom-left-radius: 5px;
@@ -182,5 +179,17 @@
                 border-bottom-right-radius: 5px;
             }
         }
+    }
+}
+
+.content-results-error {
+    width: 100%;
+    text-align: center;
+    color: #ff0000;
+    font-size: 0.8rem;
+    display: none;
+
+    &[name="shown"] {
+        display: block;
     }
 }

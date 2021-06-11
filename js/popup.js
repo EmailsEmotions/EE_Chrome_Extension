@@ -1,8 +1,12 @@
-
 let auth;
 let content;
 // TMP TO BE REMOVED
 let tmp = 1;
+
+function validateEmail(email) {
+    const re = /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return re.test(String(email).toLowerCase());
+}
 
 class Section {
     constructor(sectionName) {
@@ -19,6 +23,9 @@ class Section {
 }
 
 class AuthSection extends Section {
+    loginFields = ['username', 'password'];
+    registerFields = ['username', 'email', 'password', 'password-repeat'];
+
     constructor() {
         super('auth');
 
@@ -47,7 +54,7 @@ class AuthSection extends Section {
             this.chooseTab(registerTab);
         });
 
-        for (const input of ['email', 'password']) {
+        for (const input of this.loginFields) {
             document.getElementById(`auth-login-${input}-input`).addEventListener('click', () => {
                 this.setError('login', input, false);
             });
@@ -63,7 +70,7 @@ class AuthSection extends Section {
             this.chooseTab(loginTab);
         });
 
-        for (const input of ['email', 'password', 'password-repeat']) {
+        for (const input of this.registerFields) {
             document.getElementById(`auth-register-${input}-input`).addEventListener('click', () => {
                 this.setError('register', input, false);
             });
@@ -102,9 +109,40 @@ class AuthSection extends Section {
     }
 
     login() {
-        // Set readonly and clear errors
-        for (const input of ['email', 'password']) {
+        // Clear errors
+        this.setGlobalError('login', false);
+        for (const input of this.loginFields) {
             this.setError('login', input, false);
+        }
+
+        // Validate input
+        let validForm = true;
+
+        const username = document.getElementById('auth-login-username-input').value;
+        const password = document.getElementById('auth-login-password-input').value;
+
+        if (username.length === 0) {
+            validForm = false;
+            this.setError('login', 'username', true, 'This field cannot be empty');
+        }
+
+        if (password.length === 0) {
+            validForm = false;
+            this.setError('login', 'password', true, 'This field cannot be empty');
+        }
+
+        if (!validForm) {
+            return;
+        }
+
+        // Construct body
+        const body = {
+            username,
+            password,
+        };
+
+        // Set readonly
+        for (const input of this.loginFields) {
             document.getElementById(`auth-login-${input}-input`).readOnly = true;
         }
 
@@ -112,34 +150,104 @@ class AuthSection extends Section {
         document.getElementById('auth-login-buttons').setAttribute('name', 'hidden');
         document.getElementById('auth-login-loading').setAttribute('name', 'shown');
 
-        // Mock result
-        setTimeout(() => {
-            // Disable readonly
-            for (const input of ['email', 'password']) {
-                document.getElementById(`auth-login-${input}-input`).readOnly = true;
+        // Request
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener('readystatechange', () => {
+            if (xhr.readyState === 4) {
+                // Disable readonly
+                for (const input of this.loginFields) {
+                    document.getElementById(`auth-login-${input}-input`).readOnly = false;
+                }
+
+                // Show buttons, hide loading
+                document.getElementById('auth-login-buttons').removeAttribute('name');
+                document.getElementById('auth-login-loading').removeAttribute('name');
+                
+                if (xhr.status == 200 || xhr.status == 201) {
+                    auth.hide();
+                    content.show();
+                    chrome.storage.local.set({logged: true});
+                } else if (xhr.status === 500) {
+                    this.setGlobalError('login', true);
+                } else {
+                    this.setGlobalError('login', true, 'Niepoprawne dane');
+                }
             }
+        });
 
-            // Show buttons, hide loading
-            document.getElementById('auth-login-buttons').removeAttribute('name');
-            document.getElementById('auth-login-loading').removeAttribute('name');
+        xhr.open('POST', 'http://localhost:8080/api/user/login');
+        xhr.send(body);
 
-            // Errors
-            this.setError('login', 'password', true, 'Custom error message');
+        if (tmp === 2) {
+            auth.hide();
+            content.show();
+            chrome.storage.local.set({logged: true});
+        }
+        tmp++;
+    }
 
-            // TMP TO BE REMOVED
-            if (tmp >= 2) {
-                auth.hide();
-                content.show();
-                chrome.storage.local.set({logged: true});
-            }
-            tmp++;
-        }, 2000);
+    setGlobalError(section, error, message = 'Unexpected error occured') {
+        if (error) {
+            document.getElementById(`auth-${section}-error`).setAttribute('name', 'shown');
+            document.getElementById(`auth-${section}-error`).innerHTML = message;
+        } else {
+            document.getElementById(`auth-${section}-error`).removeAttribute('name');
+            document.getElementById(`auth-${section}-error`).innerHTML = '';
+        }
     }
 
     register () {
-        // Set readonly and clear errors
-        for (const input of ['email', 'password', 'password-repeat']) {
+        // Clear errors
+        this.setGlobalError('register', false);
+        for (const input of this.registerFields) {
             this.setError('register', input, false);
+        }
+
+        // Validate input
+        let validForm = true;
+
+        const username = document.getElementById('auth-register-username-input').value;
+        const email = document.getElementById('auth-register-email-input').value;
+        const password = document.getElementById('auth-register-password-input').value;
+        const passwordRepeated = document.getElementById('auth-register-password-repeat-input').value;
+
+        if (username.length < 3) {
+            validForm = false;
+            this.setError('register', 'username', true, 'This field must contain at least 3 characters');
+        }
+
+        if (email.length < 3) {
+            validForm = false;
+            this.setError('register', 'email', true, 'This email is too short');
+        } else if (!validateEmail(email)) {
+            validForm = false;
+            this.setError('register', 'email', true, 'This email seems to be invalid');
+        }
+
+        if (password.length < 8) {
+            validForm = false;
+            this.setError('register', 'password', true, 'Password has to have at least 8 characters');
+        }
+
+        if (password !== passwordRepeated) {
+            validForm = false;
+            this.setError('register', 'password-repeat', true, 'Passwords does not match');
+        }
+
+        if (!validForm) {
+            return;
+        }
+
+        // Construct body
+        const body = {
+            username,
+            email,
+            password,
+        };
+
+        // Set readonly
+        for (const input of this.registerFields) {
             document.getElementById(`auth-register-${input}-input`).readOnly = true;
         }
 
@@ -147,21 +255,34 @@ class AuthSection extends Section {
         document.getElementById('auth-register-buttons').setAttribute('name', 'hidden');
         document.getElementById('auth-register-loading').setAttribute('name', 'shown');
 
-        // Mock result
-        setTimeout(() => {
-            // Disable readonly
-            for (const input of ['email', 'password']) {
-                document.getElementById(`auth-register-${input}-input`).readOnly = true;
+        // Request
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener('readystatechange', () => {
+            if (xhr.readyState === 4) {
+                // Disable readonly
+                for (const input of this.registerFields) {
+                    document.getElementById(`auth-register-${input}-input`).readOnly = false;
+                }
+
+                // Show buttons, hide loading
+                document.getElementById('auth-register-buttons').removeAttribute('name');
+                document.getElementById('auth-register-loading').removeAttribute('name');
+                
+                if (xhr.status == 200 || xhr.status == 201) {
+                    auth.hide();
+                    content.show();
+                    chrome.storage.local.set({logged: true});
+                } else if (xhr.status === 500) {
+                    this.setGlobalError('register', true);
+                } else {
+                    this.setGlobalError('register', true, 'Niepoprawne dane');
+                }
             }
+        });
 
-            // Show buttons, hide loading
-            document.getElementById('auth-register-buttons').removeAttribute('name');
-            document.getElementById('auth-register-loading').removeAttribute('name');
-
-            // Errors
-            this.setError('register', 'password', true, 'Custom error message');
-            this.setError('register', 'password-repeat', true, 'Custom error message v2');
-        }, 2000);
+        xhr.open('POST', 'http://localhost:8080/api/user/addUser');
+        xhr.send(body);
     }
 
     setError(section, name, isError, message = '') {
@@ -177,6 +298,8 @@ class AuthSection extends Section {
 class ContentSection extends Section {
     constructor() {
         super('content');
+
+        this.currentText = null;
 
         this.appendListeners();
     }
@@ -196,49 +319,140 @@ class ContentSection extends Section {
     }
 
     checkFormality() {
-        this.startFormalityLoading();
+        this.setInputError(false);
+        this.setError('formality', false);
+        
+        const text = document.getElementById('content-textarea').value.trim();
+        const userId = 1;
+
+        if (text.length === 0) {
+            this.setInputError(true, 'This field cannot be empty');
+            return;
+        }
+
+        if (this.currentText !== text) {
+            this.currentText = text;
+
+            this.setInputError(false);
+            this.setError('emotions', false);
+            document.getElementById('content-results-emotions').removeAttribute('name');
+        }
+        
+
+        // Body
+        const body = {
+            text,
+            userId,
+        };
+
+        this.setLoading('formality', true);
         document.getElementById('content-results-formality').removeAttribute('name');
 
-        setTimeout(() => {
-            this.stopFormalityLoading();
-            this.showFormalityResults({formal: 20, informal: 80});
-            this.showReviewButton();
-        }, 1000);
+        // Request
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener('readystatechange', () => {
+            if (xhr.readyState === 4) {
+                this.setLoading('formality', false);
+
+                if (xhr.status == 200 || xhr.status == 201) {
+                    this.showFormalityResults({formal: 20, informal: 80});
+                } else if (xhr.status === 500) {
+                    this.setError('formality', true);
+                } else {
+                    this.setError('formality', true, 'Unable to get formality results');
+                }
+            }
+        });
+
+        xhr.open("POST", "http://localhost:8080/api/formality/recognize");
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.send(body);
     }
 
     checkEmotions() {
-        this.startEmotionsLoading();
+        this.setInputError(false);
+        this.setError('emotions', false);
+        
+        const text = document.getElementById('content-textarea').value;
+        const userId = 1;
+
+        if (text.length === 0) {
+            this.setInputError(true, 'This field cannot be empty');
+            return;
+        }
+
+        if (this.currentText !== text) {
+            this.currentText = text;
+
+            this.setInputError(false);
+            this.setError('formality', false);
+            document.getElementById('content-results-formality').removeAttribute('name');
+        }
+
+        // Body
+        const body = {
+            text,
+            userId,
+        };
+
+        this.setLoading('emotions', true);
         document.getElementById('content-results-emotions').removeAttribute('name');
 
-        setTimeout(() => {
-            this.stopEmotionsLoading();
-            this.showEmotionsResults({a: 10, b: 20, c: 30, d: 80, e: 50});
-            this.showReviewButton();
-        }, 1000);
+        // Request
+        var xhr = new XMLHttpRequest();
+
+        xhr.addEventListener('readystatechange', () => {
+            if (xhr.readyState === 4) {
+                this.setLoading('emotions', false);
+                
+                if (xhr.status == 200 || xhr.status == 201) {
+                    this.showEmotionsResults({happy: 10, sad: 20, fear: 30, angry: 80, surprise: 50});
+                } else if (xhr.status === 500) {
+                    this.setError('emotions', true);
+                } else {
+                    this.setError('emotions', true, 'Unable to get emotions results');
+                }
+            }
+        });
+
+        xhr.open("POST", "http://localhost:8080/api/emotions/recognize");
+        xhr.setRequestHeader("Content-Type", "application/json");
+
+        xhr.send(body);
     }
 
-    startFormalityLoading() {
-        document.getElementById('content-textarea').readOnly = true;
-        document.getElementById('content-button-formality').setAttribute('name', 'hidden');
-        document.getElementById('content-formality-loading').setAttribute('name', 'shown');
+    setInputError(error, message = '') {
+        this.setError('text', error, message);
+
+        if (error) {
+            document.getElementById('content-textarea').setAttribute('name', 'error');
+        } else {
+            document.getElementById('content-textarea').removeAttribute('name');
+        }
     }
 
-    stopFormalityLoading() {
-        document.getElementById('content-textarea').readOnly = false;
-        document.getElementById('content-button-formality').removeAttribute('name');
-        document.getElementById('content-formality-loading').removeAttribute('name');
+    setLoading(section, loading) {
+        if (loading) {
+            document.getElementById('content-textarea').readOnly = true;
+            document.getElementById(`content-button-${section}`).setAttribute('name', 'hidden');
+            document.getElementById(`content-${section}-loading`).setAttribute('name', 'shown');
+        } else {
+            document.getElementById('content-textarea').readOnly = false;
+            document.getElementById(`content-button-${section}`).removeAttribute('name');
+            document.getElementById(`content-${section}-loading`).removeAttribute('name');
+        }
     }
 
-    startEmotionsLoading() {
-        document.getElementById('content-textarea').readOnly = true;
-        document.getElementById('content-button-emotions').setAttribute('name', 'hidden');
-        document.getElementById('content-emotions-loading').setAttribute('name', 'shown');
-    }
-
-    stopEmotionsLoading() {
-        document.getElementById('content-textarea').readOnly = false;
-        document.getElementById('content-button-emotions').removeAttribute('name');
-        document.getElementById('content-emotions-loading').removeAttribute('name');
+    setError(section, isError, message = 'Unexpected error occured') {
+        if (isError) {
+            document.getElementById(`content-${section}-error`).setAttribute('name', 'shown');
+            document.getElementById(`content-${section}-error`).innerHTML = message;
+        } else {
+            document.getElementById(`content-${section}-error`).removeAttribute('name');
+            document.getElementById(`content-${section}-error`).innerHTML = '';
+        }
     }
 
     showFormalityResults(results) {
@@ -253,20 +467,16 @@ class ContentSection extends Section {
     showEmotionsResults(results) {
         document.getElementById('content-results-emotions').setAttribute('name', 'shown');
 
-        document.getElementById('content-result-emotion-1').innerHTML = `${results.a}%`;
-        document.getElementById('content-result-emotion-col-1').style.background = `rgba(255, 153, 0, ${results.a / 100})`;
-        document.getElementById('content-result-emotion-2').innerHTML = `${results.b}%`;
-        document.getElementById('content-result-emotion-col-2').style.background = `rgba(255, 153, 0, ${results.b / 100})`;
-        document.getElementById('content-result-emotion-3').innerHTML = `${results.c}%`;
-        document.getElementById('content-result-emotion-col-3').style.background = `rgba(255, 153, 0, ${results.c / 100})`;
-        document.getElementById('content-result-emotion-4').innerHTML = `${results.d}%`;
-        document.getElementById('content-result-emotion-col-4').style.background = `rgba(255, 153, 0, ${results.d / 100})`;
-        document.getElementById('content-result-emotion-5').innerHTML = `${results.e}%`;
-        document.getElementById('content-result-emotion-col-5').style.background = `rgba(255, 153, 0, ${results.e / 100})`;
-    }
-
-    showReviewButton() {
-        document.getElementById('content-results-review').setAttribute('name', 'shown');
+        document.getElementById('content-result-emotion-1').innerHTML = `${results.happy}%`;
+        document.getElementById('content-result-emotion-col-1').style.background = `rgba(255, 153, 0, ${results.happy / 100})`;
+        document.getElementById('content-result-emotion-2').innerHTML = `${results.sad}%`;
+        document.getElementById('content-result-emotion-col-2').style.background = `rgba(255, 153, 0, ${results.sad / 100})`;
+        document.getElementById('content-result-emotion-3').innerHTML = `${results.fear}%`;
+        document.getElementById('content-result-emotion-col-3').style.background = `rgba(255, 153, 0, ${results.fear / 100})`;
+        document.getElementById('content-result-emotion-4').innerHTML = `${results.angry}%`;
+        document.getElementById('content-result-emotion-col-4').style.background = `rgba(255, 153, 0, ${results.angry / 100})`;
+        document.getElementById('content-result-emotion-5').innerHTML = `${results.surprise}%`;
+        document.getElementById('content-result-emotion-col-5').style.background = `rgba(255, 153, 0, ${results.surprise / 100})`;
     }
 
     logout() {
