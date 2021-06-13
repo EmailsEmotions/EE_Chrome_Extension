@@ -310,6 +310,8 @@ class ContentSection extends Section {
     constructor() {
         super('content');
 
+        this.formalityId = null;
+        this.emotionsId = null;
         this.currentText = null;
 
         this.appendListeners();
@@ -326,6 +328,14 @@ class ContentSection extends Section {
 
         document.getElementById('logout-image').addEventListener('click', () => {
             this.logout();
+        });
+
+        document.getElementById('content-results-formality-review-button').addEventListener('click', () => {
+            this.openReview('formality');
+        });
+
+        document.getElementById('content-results-emotions-review-button').addEventListener('click', () => {
+            this.openReview('emotions');
         });
     }
 
@@ -344,6 +354,7 @@ class ContentSection extends Section {
 
         if (this.currentText !== text) {
             this.currentText = text;
+            this.formalityId = null;
 
             this.setInputError(false);
             this.setError('emotions', false);
@@ -370,6 +381,7 @@ class ContentSection extends Section {
                     try {
                         const results = JSON.parse(xhr.responseText);
                         this.showFormalityResults(results);
+                        this.formalityId = results.id;
                     } catch(e) {
                         this.setError('emotions', true, 'Unable to interpret server response');
                     }
@@ -403,6 +415,7 @@ class ContentSection extends Section {
 
         if (this.currentText !== text) {
             this.currentText = text;
+            this.emotionsId = null;
 
             this.setInputError(false);
             this.setError('formality', false);
@@ -429,6 +442,7 @@ class ContentSection extends Section {
                     try {
                         const results = JSON.parse(xhr.responseText);
                         this.showEmotionsResults(results);
+                        this.emotionsId = results.id;
                     } catch(e) {
                         this.setError('emotions', true, 'Unable to interpret server response');
                     }
@@ -444,6 +458,15 @@ class ContentSection extends Section {
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         xhr.send(body);
+    }
+
+    openReview(type) {
+        const id = type === 'formality' ? this.formalityId : this.emotionsId;
+        if (id === null) {
+            return;
+        }
+
+        window.open(`http://localhost:8081?type=${type}&id=${id}`);
     }
 
     setInputError(error, message = '') {
@@ -482,9 +505,9 @@ class ContentSection extends Section {
         document.getElementById('content-results-formality').setAttribute('name', 'shown');
         
         document.getElementById('content-result-formality-1').innerHTML = `${results.formality * 100}%`;
-        document.getElementById('content-result-formality-col-1').style.background = `rgba(255, 153, 0, ${results.formal / 100})`;
+        document.getElementById('content-result-formality-col-1').style.background = `rgba(255, 153, 0, ${results.formality})`;
         document.getElementById('content-result-formality-2').innerHTML = `${results.informality * 100}%`;
-        document.getElementById('content-result-formality-col-2').style.background = `rgba(255, 153, 0, ${results.informal / 100})`;
+        document.getElementById('content-result-formality-col-2').style.background = `rgba(255, 153, 0, ${results.informality})`;
     }
 
     showEmotionsResults(results) {
