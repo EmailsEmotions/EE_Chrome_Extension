@@ -406,6 +406,8 @@ class ContentSection extends Section {
                         this.setError('emotions', true, 'Unable to interpret server response');
                     }
                    
+                } else if (xhr.status === 401) {
+                    this.logout();
                 } else if (xhr.status === 500) {
                     this.setError('formality', true);
                 } else {
@@ -464,7 +466,9 @@ class ContentSection extends Section {
                     } catch(e) {
                         this.setError('emotions', true, 'Unable to interpret server response');
                     }
-                } else if (xhr.status === 500) {
+                } else if (xhr.status === 401) {
+                    this.logout();
+                }  else if (xhr.status === 500) {
                     this.setError('emotions', true);
                 } else {
                     this.setError('emotions', true, 'Unable to get emotions results');
