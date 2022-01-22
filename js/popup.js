@@ -485,7 +485,7 @@ class ContentSection extends Section {
             return;
         }
 
-        window.open(`http://localhost:8081?type=${type}&id=${id}`);
+        window.open(`http://localhost:8081?type=${type}&id=${id}&userId=${user.id}&token=${user.token}`);
     }
 
     setInputError(error, message = '') {
