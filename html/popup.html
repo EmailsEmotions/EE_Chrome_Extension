@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="stylesheet" href="../css/popup.css">
+</head>
+
+<body>
+    <section class="section" id="auth">
+        <header class="auth-header">
+            <div class="auth-header-label" data-name="login">
+                <span>Sign in</span>
+            </div>
+            <div class="auth-header-label" data-name="register">
+                <span>Register</span>
+            </div>
+    
+            <div id="auth-header-line"></div>
+        </header>
+    
+        <main class="auth-tabs">
+            <div class="auth-logo">
+                <div>
+                    <img src="../images/Logo32.png"/>
+                    <h1>EmailEmotions</h1>
+                </div>
+            </div>
+
+            <section id="auth-login">
+                <div class="auth-form">
+                    <div class="form-field">
+                        <label>Username</label>
+                        <input id="auth-login-username-input" type="text" placeholder="Username" />
+                        <span id="auth-login-username-error"></span>
+                    </div>
+                    <div class="form-field">
+                        <label>Password</label>
+                        <input id="auth-login-password-input" type="password" placeholder="Password" />
+                        <span id="auth-login-password-error"></span>
+                    </div>
+
+                    <div class="auth-buttons" id="auth-login-buttons">
+                        <button id="auth-button-login" class="btn btn-primary">Sign in</button>
+                        <button id="auth-button-no-acccount" class="btn btn-secondary">No account yet? Create one</button>
+                    </div>
+
+                    <div class="auth-loading" id="auth-login-loading">
+                        <div class="loading"></div>
+                    </div>
+
+                    <div class="auth-error" id="auth-login-error">
+                        <p>Unexpected error occured</p>
+                    </div>
+                </div>
+            </section>
+    
+            <section id="auth-register">
+                <div class="auth-form">
+                    <div class="form-field">
+                        <label>Username</label>
+                        <input id="auth-register-username-input" type="text" placeholder="Username" />
+                        <span id="auth-register-username-error"></span>
+                    </div>
+
+                    <div class="form-field">
+                        <label>E-mail</label>
+                        <input id="auth-register-email-input" type="email" placeholder="E-mail" />
+                        <span id="auth-register-email-error"></span>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Password</label>
+                        <input id="auth-register-password-input" type="password" placeholder="Password" />
+                        <span id="auth-register-password-error"></span>
+                    </div>
+
+                    <div class="form-field">
+                        <label>Repeat password</label>
+                        <input id="auth-register-password-repeat-input" type="password" placeholder="Password" />
+                        <span id="auth-register-password-repeat-error"></span>
+                    </div>
+
+                    <div class="auth-buttons" id="auth-register-buttons">
+                        <button id="auth-button-register" class="btn btn-primary">Register</button>
+                        <button id="auth-button-have-acccount" class="btn btn-secondary">Already have one? Sign in</button>
+                    </div>
+
+                    <div class="auth-loading" id="auth-register-loading">
+                        <div class="loading"></div>
+                    </div>
+
+                    <div class="auth-error" id="auth-register-error">
+                        <p>Unexpected error occured</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </section>
+    
+    <section class="section" id="content">
+        <img id="logout-image" src="../icons/power-off.svg" alt="Logout" title="Logout" />
+
+        <div class="content-logo">
+            <div>
+                <img src="../images/Logo32.png"/>
+                <h1>EmailEmotions</h1>
+            </div>
+        </div>
+
+        <section class="content-form">
+            <div class="form-field">
+                <label>Text to be checked</label>
+                <textarea id="content-textarea" placeholder="Enter your text here..."></textarea>
+
+                <div class="content-results-error" id="content-text-error"></div>
+            </div>
+
+            <div class="content-buttons">
+                <div>
+                    <button id="content-button-formality" class="btn btn-primary">Check formality</button>
+
+                    <div class="content-loading" id="content-formality-loading">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+
+                <div>
+                    <button id="content-button-emotions" class="btn btn-primary">Check emotions</button>
+
+                    <div class="content-loading" id="content-emotions-loading">
+                        <div class="loading"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="content-results">
+            <div class="content-results-container" id="content-results-formality">
+                <h2>Formality</h2>
+                <div class="content-results-section">
+                    <div id="content-result-formality-col-1" class="content-results-col">
+                        <div>
+                            <span>Formal</span>
+                        </div>
+                        <div>
+                            <span id="content-result-formality-1"></span>
+                        </div>
+                    </div>
+                    <div id="content-result-formality-col-2" class="content-results-col">
+                        <div>
+                            <span>Informal</span>
+                        </div>
+                        <div>
+                            <span id="content-result-formality-2"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-results-review" id="content-results-review-emotions">
+                    <button id="content-results-formality-review-button" class="btn btn-primary">Review results</button>
+                </div>
+            </div>
+
+            <div class="content-results-error" id="content-formality-error"></div>
+
+            <div class="content-results-container" id="content-results-emotions">
+                <h2>Emotions</h2>
+                <div class="content-results-section">
+                    <div id="content-result-emotion-col-1" class="content-results-col">
+                        <div>
+                            <span>Happy</span>
+                        </div>
+                        <div>
+                            <span id="content-result-emotion-1"></span>
+                        </div>
+                    </div>
+                    <div id="content-result-emotion-col-2" class="content-results-col">
+                        <div>
+                            <span>Sad</span>
+                        </div>
+                        <div>
+                            <span id="content-result-emotion-2"></span>
+                        </div>
+                    </div>
+                    <div id="content-result-emotion-col-3" class="content-results-col">
+                        <div>
+                            <span>Fear</span>
+                        </div>
+                        <div>
+                            <span id="content-result-emotion-3"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="content-results-section">
+                    <div id="content-result-emotion-col-4" class="content-results-col">
+                        <div>
+                            <span>Angry</span>
+                        </div>
+                        <div>
+                            <span id="content-result-emotion-4"></span>
+                        </div>
+                    </div>
+                    <div id="content-result-emotion-col-5" class="content-results-col">
+                        <div>
+                            <span>Surprise</span>
+                        </div>
+                        <div>
+                            <span id="content-result-emotion-5"></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="content-results-review" id="content-results-review-emotions">
+                    <button id="content-results-emotions-review-button" class="btn btn-primary">Review results</button>
+                </div>
+            </div>
+
+            <div class="content-results-error" id="content-emotions-error"></div>
+
+        </section>
+    </section>
+
+    <script src="../js/popup.js"></script>
+</body>
+
+</html>

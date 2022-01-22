@@ -1,0 +1,49 @@
+.form-field {
+    width: 100%;
+    margin-bottom: 12px;
+
+    &:last-of-type {
+        margin-bottom: 0;
+    }
+
+    > label {
+        width:100%;
+        margin-bottom: 5px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-weight: 700;
+        color: #666;
+        display: block;
+    }
+
+    > input {
+        width: calc(100% - 2px - 20px);
+        border:solid 1px #ccc;
+        padding: 10px;
+        border-radius: 5px;
+
+        &[name="error"] {
+            border-color: #ff0000;
+        }
+    }
+
+    > textarea {
+        min-width: calc(100% - 2px - 20px);
+        max-width: calc(100% - 2px - 20px);
+        height: 80px;
+        border:solid 1px #ccc;
+        padding: 10px;
+        border-radius: 5px;
+
+        &[name="error"] {
+            border-color: #ff0000;
+        }
+    }
+
+    > span {
+        width: 100%;
+        color: #ff0000;
+        font-size: 0.8rem;
+        display: block;
+    }
+}

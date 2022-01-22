@@ -1,0 +1,30 @@
+{
+  "name": "emailemotions",
+  "version": "1.0.0",
+  "description": "Email emotions extension",
+  "main": "background.js",
+  "scripts": {
+    "scss": "gulp scss",
+    "scss-watch": "gulp scss:watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/EmailsEmotions/EE_Chrome_Extension.git"
+  },
+  "keywords": [
+    "email",
+    "emotions",
+    "formality"
+  ],
+  "author": "EmailEmotions Team",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/EmailsEmotions/EE_Chrome_Extension/issues"
+  },
+  "homepage": "https://github.com/EmailsEmotions/EE_Chrome_Extension#readme",
+  "devDependencies": {
+    "gulp": "^4.0.2",
+    "gulp-sass": "^4.1.0",
+    "node-sass": "^6.0.0"
+  }
+}
