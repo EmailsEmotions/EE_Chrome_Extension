@@ -1,9 +1,20 @@
 let auth;
 let content;
+let user = {
+    id: null,
+    token: null,
+};
 
 function validateEmail(email) {
     const re = /^(([^<>()[\]\\.,;:\s@']+(\.[^<>()[\]\\.,;:\s@']+)*)|('.+'))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
     return re.test(String(email).toLowerCase());
+}
+
+function normalize(x) {
+    const MAX = 2;
+    const MIN = 0;
+
+    return (x - MIN) / (MAX - MIN);
 }
 
 class Section {
@@ -165,24 +176,37 @@ class AuthSection extends Section {
                 if (xhr.status == 200 || xhr.status == 201) {
                     auth.hide();
                     content.show();
+                    
+                    try {
+                        let json = JSON.parse(xhr.responseText);
+                        user.id = json.user.id;
+                        user.token = json.token;
+                    } catch(e) {
+                        console.log(e);
+                    }
+
                     chrome.storage.local.set({logged: true});
+                    chrome.storage.local.set({userId: user.id});
+                    chrome.storage.local.set({token: user.token});
                     this.clearRegisterInputs();
                     this.clearLoginInputs();
-                } else if (xhr.status === 500) {
-                    // TODO
+                } else if (xhr.status === 401) {
                     this.setGlobalError('login', true, 'Niepoprawne dane');
+                } else if (xhr.status === 404) {
+                    this.setGlobalError('login', true, 'Niepoprawny uzytkownik');
                 } else {
-                    this.setGlobalError('login', true, 'Niepoprawne dane');
+                    this.setGlobalError('login', true, 'Wystapil blad');
                 }
             }
         });
 
-        xhr.open('POST', 'http://localhost:8080/api/user/login');
+        xhr.open('POST', 'http://localhost:8080/api/auth/login');
         xhr.setRequestHeader('Content-Type', 'application/json');
         xhr.send(body);
     }
 
     setGlobalError(section, error, message = 'Unexpected error occured') {
+        console.log(message);
         if (error) {
             document.getElementById(`auth-${section}-error`).setAttribute('name', 'shown');
             document.getElementById(`auth-${section}-error`).innerHTML = message;
@@ -192,7 +216,7 @@ class AuthSection extends Section {
         }
     }
 
-    register () {
+    register() {
         // Clear errors
         this.setGlobalError('register', false);
         for (const input of this.registerFields) {
@@ -265,11 +289,9 @@ class AuthSection extends Section {
                 document.getElementById('auth-register-loading').removeAttribute('name');
                 
                 if (xhr.status == 200 || xhr.status == 201) {
-                    auth.hide();
-                    content.show();
-                    chrome.storage.local.set({logged: true});
+                    this.chooseTab(0);
+
                     this.clearRegisterInputs();
-                    this.clearLoginInputs();
                 } else if (xhr.status === 500) {
                     // TODO
                     this.setGlobalError('register', true);
@@ -344,8 +366,6 @@ class ContentSection extends Section {
         this.setError('formality', false);
         
         const text = document.getElementById('content-textarea').value.trim();
-        // TODO
-        const userId = 1;
 
         if (text.length === 0) {
             this.setInputError(true, 'This field cannot be empty');
@@ -364,7 +384,7 @@ class ContentSection extends Section {
         // Body
         const body = JSON.stringify({
             text,
-            userId,
+            userId: user.id,
         });
 
         this.setLoading('formality', true);
@@ -396,7 +416,7 @@ class ContentSection extends Section {
 
         xhr.open('POST', 'http://localhost:8080/api/formality/recognize');
         xhr.setRequestHeader('Content-Type', 'application/json');
-
+        xhr.setRequestHeader('Authorization', user.token);
         xhr.send(body);
     }
 
@@ -405,8 +425,6 @@ class ContentSection extends Section {
         this.setError('emotions', false);
         
         const text = document.getElementById('content-textarea').value;
-        // TODO
-        const userId = 1;
 
         if (text.length === 0) {
             this.setInputError(true, 'This field cannot be empty');
@@ -425,7 +443,7 @@ class ContentSection extends Section {
         // Body
         const body = JSON.stringify({
             text,
-            userId,
+            userId: user.id,
         });
 
         this.setLoading('emotions', true);
@@ -456,6 +474,7 @@ class ContentSection extends Section {
 
         xhr.open('POST', 'http://localhost:8080/api/emotions/recognize');
         xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', user.token);
 
         xhr.send(body);
     }
@@ -503,6 +522,9 @@ class ContentSection extends Section {
 
     showFormalityResults(results) {
         document.getElementById('content-results-formality').setAttribute('name', 'shown');
+
+        results.formality = normalize(results.formality)
+        results.informality = normalize(results.informality)
         
         document.getElementById('content-result-formality-1').innerHTML = `${results.formality * 100}%`;
         document.getElementById('content-result-formality-col-1').style.background = `rgba(255, 153, 0, ${results.formality})`;
@@ -512,6 +534,12 @@ class ContentSection extends Section {
 
     showEmotionsResults(results) {
         document.getElementById('content-results-emotions').setAttribute('name', 'shown');
+
+        results.happy = normalize(results.happy)
+        results.sad = normalize(results.sad)
+        results.fear = normalize(results.fear)
+        results.angry = normalize(results.angry)
+        results.surprise = normalize(results.surprise)
 
         document.getElementById('content-result-emotion-1').innerHTML = `${results.happy * 100}%`;
         document.getElementById('content-result-emotion-col-1').style.background = `rgba(255, 153, 0, ${results.happy})`;
@@ -525,8 +553,26 @@ class ContentSection extends Section {
         document.getElementById('content-result-emotion-col-5').style.background = `rgba(255, 153, 0, ${results.surprise})`;
     }
 
+    clear() {
+        document.getElementById('content-results-formality').removeAttribute('name');
+        document.getElementById('content-results-emotions').removeAttribute('name');
+        document.getElementById('content-textarea').value = '';
+    }
+
     logout() {
+        // Request
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', 'http://localhost:8080/api/auth/logout');
+        xhr.setRequestHeader('Content-Type', 'application/json');
+        xhr.setRequestHeader('Authorization', user.token);
+        xhr.send(null);
+
+        this.clear();
+        user.id = null;
+        user.token = null;
         chrome.storage.local.remove(['logged']);
+        chrome.storage.local.remove(['userId']);
+        chrome.storage.local.remove(['token']);
         content.hide();
         auth.show();
     }
@@ -536,9 +582,24 @@ window.onload = () => {
     auth = new AuthSection();
     content = new ContentSection();
 
-    chrome.storage.local.get(['logged'], (result) => {
-        if (result.logged) {
-            content.show();
+    chrome.storage.local.get(['logged'], (loggedResult) => {
+        if (loggedResult.logged) {
+            chrome.storage.local.get(['userId'], (idResult) => {
+                if (idResult.userId) {
+                    chrome.storage.local.get(['token'], (tokenResult) => {
+                        if (tokenResult.token) {
+                            user.token = tokenResult.token;
+                            user.id = idResult.userId;
+
+                            content.show();
+                        } else {
+                            auth.show();
+                        }
+                    });
+                } else {
+                    auth.show();
+                }
+            });
         } else {
             auth.show();
         }
