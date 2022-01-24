@@ -383,7 +383,7 @@ class ContentSection extends Section {
         
         // Body
         const body = JSON.stringify({
-            text,
+            text: text.replace(/\s+/g, ' ').trim(),
             userId: user.id,
         });
 
